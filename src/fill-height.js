@@ -1,20 +1,22 @@
-﻿(function (fillHeightModule) {
-
+//# https://github.com/anthonychu/angular-fill-height-directive
+//# Ver: Sept 24, 2015
+//# removed isolate scope
+(function (fillHeightModule) {
     fillHeightModule.directive('fillHeight', ['$window', '$document', '$timeout', function ($window, $document, $timeout) {
         return {
             restrict: 'A',
-            scope: {
-                footerElementId: '@',
-                additionalPadding: '@',
-                debounceWait: '@'
-            },
             link: function (scope, element, attrs) {
-                if (scope.debounceWait === 0) {
+                var footerElementId = attrs.footerElementId,
+                    additionalPadding = attrs.additionalPadding || 0,
+                    debounceWait = attrs.debounceWait || 250
+                ;
+
+                if (debounceWait === 0) {
                     angular.element($window).on('resize', windowResize);
                 } else {
                     // allow debounce wait time to be passed in.
                     // if not passed in, default to a reasonable 250ms
-                    angular.element($window).on('resize', debounce(onWindowResize, scope.debounceWait || 250));
+                    angular.element($window).on('resize', debounce(onWindowResize, debounceWait));
                 }
                 
                 onWindowResize();
@@ -37,7 +39,7 @@
                 }
                 
                 function onWindowResize() {
-                    var footerElement = angular.element($document[0].getElementById(scope.footerElementId));
+                    var footerElement = angular.element($document[0].getElementById(footerElementId));
                     var footerElementHeight;
 
                     if (footerElement.length === 1) {
@@ -50,16 +52,13 @@
 
                     var elementOffsetTop = element[0].offsetTop;
                     var elementBottomMarginAndBorderHeight = getBottomMarginAndBorderHeight(element);
-
-                    var additionalPadding = scope.additionalPadding || 0;
-
+                    
                     var elementHeight = $window.innerHeight
                                         - elementOffsetTop
                                         - elementBottomMarginAndBorderHeight
                                         - footerElementHeight
                                         - additionalPadding;
 
-                    console.log(elementHeight);
                     element.css('height', elementHeight + 'px');
                 }
 
@@ -81,5 +80,4 @@
             }
         };
     }]);
-
 })(angular.module("fillHeight", []))
